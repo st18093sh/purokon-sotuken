@@ -13,7 +13,10 @@ import struct
 from scipy import fromstring, int16
 import numpy as np
 import math
-
+import time
+import requests
+import json
+import glob
 
 
 class Application(tk.Frame):
@@ -55,6 +58,8 @@ class Application(tk.Frame):
         
     #録音開始
     def button_clickrec(self):
+        for wav in glob.glob('C:/Users/dishi/pro_con/voice02/voice*.wav'):
+            os.remove(wav)
         if self.rec_flag == False:
             self.cmd = "sox -t waveaudio -d "+ self.file_na
             self.p = subprocess.Popen(self.cmd.split())
@@ -62,10 +67,6 @@ class Application(tk.Frame):
             self.rec_flag = True
             
     def button_bunseki(self):
-        import time
-        import requests
-        import json
-        import glob
         url = 'https://api.webempath.net/v2/analyzeWav'
 
         #ここはご自分のKeyを入力ください
