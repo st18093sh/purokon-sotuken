@@ -43,12 +43,12 @@ class Application(tk.Frame):
         #再生ボタン
         self.Button3 = tk.Button(text=u'再生ボタン',width=20,command=self.button_clickplay)
         self.Button3.grid(row=1,column=0,pady=5)
-        #再生ボタン
+        #終了
         self.Button4 = tk.Button(text=u'終了',width=20,command=self.button_delete)
-        self.Button4.grid(row=1,column=1,pady=5)
+        self.Button4.grid(row=1,column=2,pady=5)
         #感情解析
         self.Button5 = tk.Button(text='感情分析',width=20,command=self.button_bunseki)
-        self.Button5.grid(row=1,column=2,pady=5)
+        self.Button5.grid(row=1,column=1,pady=5)
         #スクロールテキスト
         self.Scrolltext1 = st.ScrolledText()
         self.Scrolltext1.grid(row=2,columnspan=5,padx=20,pady=20)
@@ -73,61 +73,95 @@ class Application(tk.Frame):
         apikey = 'I9D0hwNxDJpBbDRv2fDtouE3bWpzAuCihpJVzc7bSic'
         payload = {'apikey': apikey}
 
-        ene_sum=0
-        joy_sum=0
-        count=0
+        cal_sum=0   #平常
+        ang_sum=0   #怒り
+        joy_sum=0   #喜び
+        sor_sum=0   #悲しみ
+        ene_sum=0   #元気
+        count=0     #ファイル数
 
         for wav in glob.glob(r'C:\Users\dishi\pro_con\voice02\voice*.wav'):
             data = open(wav, 'rb')
             file = {'wav': data}
-            print(wav)
+            #print(wav)
 
             res = requests.post(url, params=payload, files=file)
             kekka = json.loads(res.text)
             if kekka['error'] == 1001:
                 self.Scrolltext1.insert('API keyが空です')
+                break
             elif kekka['error'] == 1002:
                 self.Scrolltext1.insert('wavファイル送信されていません')
+                break
             elif kekka['error'] == 1003:
                 self.Scrolltext1.insert('contet-typeがmulripart/form-dataで始まりません')
+                break
             elif kekka['error'] == 1011:
                 self.Scrolltext1.insert('wavファイルがPCM_FLOAT,PCM_SIGNED,PCM_UNSIGNEDのいずれにも該当しません')
+                break
             elif kekka['error'] == 1012:
                 self.Scrolltext1.insert('wavファイルのサンプリング周波数が11025Hz以外です')
+                break
             elif kekka['error'] == 1013:
                 self.Scrolltext1.insert('wavファイルがモノラルではありません')
+                break
             elif kekka['error'] == 1014:
                 self.Scrolltext1.insert('wavファイルの録音秒数が5秒以上です')
+                break
             elif kekka['error'] == 1015:
                 self.Scrolltext1.insert('wavファイルのサイズが1.9MB以上です')
+                break
             elif kekka['error'] == 1016:
                 self.Scrolltext1.insert('wavファイルが妥当な音声として読み取れません')
+                break
             elif kekka['error'] == 1017:
                 self.Scrolltext1.insert('不正なAPIバージョンが指定されました')
+                break
             elif kekka['error'] == 2001:
                 self.Scrolltext1.insert('送信されたAPI keyはAPIコール回数上限を超過しました')
+                apikey = 'Rla2mV6XkggQ-2FpJUkCKjO1JdGJF6gD61egg0ELJE4'
+                continue
             elif kekka['error'] == 2002:
                 self.Scrolltext1.insert('アカウントまたはその状態が不正です')
+                break
             elif kekka['error'] == 2003:
                 self.Scrolltext1.insert('送信されたAPI key利用可能な状態ではありません')
+                break
             elif kekka['error'] == 1017:
                 self.Scrolltext1.insert('送信されたAPI keyは利用できないか、存在しません')
+                break
             elif kekka['error'] == 1017:
                 self.Scrolltext1.insert('不正なAPIバージョンが指定されました')
+                break
             elif kekka['error'] == 3001:
                 self.Scrolltext1.insert('許可されていない国からのアクセスである')
+                break
             elif kekka['error'] == 9999:
                 self.Scrolltext1.insert('内部エラー')
+                break
                 
-            ene = kekka['energy']
+            cal = kekka['calm']
+            ang = kekka['anger']
             joy = kekka['joy']
-            joy_sum += joy
-            ene_sum += ene
+            sor = kekka['sorrow']
+            ene = kekka['energy']
+            cal_sum += cal   #平常
+            ang_sum += ang   #怒り
+            joy_sum += joy   #喜び
+            sor_sum += sor   #悲しみ
+            ene_sum +=ene   #元気            
             count += 1
             time.sleep(1)
         
-        ene_kekka=ene_sum/count
-        joy_kekka=joy_sum/count
+        print(res.json())
+        kekka = json.loads(res.text)
+        cal_ave = cal_sum/count
+        ang_ave = ang_sum/count
+        joy_ave = joy_sum/count
+        sor_ave = sor_sum/count
+        ene_ave = ene_sum/count
+        self.Scrolltext1.insert('end',res.json())
+        '''
         if ene_kekka>30 and joy_kekka>30:
             self.Scrolltext1.insert('end',u'すばらしい\n')
         elif ene_kekka<30 and joy_kekka>30:
@@ -136,7 +170,7 @@ class Application(tk.Frame):
             self.Scrolltext1.insert('end',u'元気ですが、楽しそうではありません\n')
         elif ene_kekka<30 and joy_kekka<30:
             self.Scrolltext1.insert('end',u'元気も楽しそうでもありません\n')
-            
+        ''' 
     #録音停止
     def button_clickstop(self):
         if self.rec_flag == True:
